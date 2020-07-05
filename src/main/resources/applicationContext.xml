@@ -4,9 +4,16 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/util https://www.springframework.org/schema/util/spring-util.xsd">
 
-<!--    <import resource="classpath:spring-dao.xml"/>-->
-<!--    <import resource="classpath:spring-service.xml"/>-->
+    <import resource="classpath:spring-dao.xml"/>
+    <import resource="classpath:spring-service.xml"/>
     <import resource="classpath:spring-mvc.xml"/>
-
+    <!--引入properties配置文件-->
+    <bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+        <property  name="locations">
+            <list>
+                <value>classpath:database.properties</value>
+            </list>
+        </property>
+    </bean>
 
 </beans>

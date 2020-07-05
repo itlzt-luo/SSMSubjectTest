@@ -16,7 +16,7 @@
     <mvc:default-servlet-handler/>
 
     <!--配置自动扫描-->
-    <context:component-scan base-package="com.ssmTest"></context:component-scan>
+    <context:component-scan base-package="com.ssmTest.controller"></context:component-scan>
 
     <!-- 定义BeanNameViewResolver 可以用来提供自定义view输出，如pdf等，但是一般用类似千牛的DNS静态服务来代替
             此处与freemarker无关，仅仅是介绍freemarker在多视图解析器下order的顺序
