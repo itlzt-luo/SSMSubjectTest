@@ -1,62 +1,62 @@
-#SSM实验作业二：Mybatis实现一对一，一对多数据插入数据
-
-**基于SqlSession的ExecutorType进行批量插入**
-##主要代码
-
-###service
+#SSM实验作业三、四
+##SpringMVC使用拦截器实现用户登录权限验证
+###拦截器注册 spring-mvc.xml
+~~~xml
+    <!--拦截器注册-->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <mvc:exclude-mapping path="/login"/>
+            <mvc:exclude-mapping path="/toLogin"/>
+            <mvc:exclude-mapping path="/assets/**"/>
+            <bean class="com.ssmTest.interceptor.LogInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+~~~
+###拦截器com.ssmTest.interceptor.LogInterceptor
 ~~~java
-@Service
-public class UserService {
-    @Autowired
-    private UserMapper userMapper;
+public class LogInterceptor implements HandlerInterceptor {
 
-    //添加数据
-    public void insertUser(User user) {
-        userMapper.insertUser(user);
+    @Autowired
+    private AccountService accountService;
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        HttpSession session = request.getSession();
+        Account account = (Account) session.getAttribute("account");
+        /*判断是否已经登录*/
+        if (account == null) {
+            response.sendRedirect("/toLogin");
+        } else {
+            return true;
+        }
+        return false;
     }
 
-    //批量添加数据
-    public void batchUser(List<User> userList) {
-        for (User user : userList) {
-            userMapper.insertUser(user);
-        }
+    @Override
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+
     }
 }
 ~~~
-
-###mapper
+##Mybatis实现关联映射 
+### mapper文件 com.ssmTest.mapper.AccountMapper.xml
 ~~~xml
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.ssmTest.mapper.UserMapper">
-    <resultMap id="BaseResultMap" type="com.ssmTest.model.User">
+    <resultMap id="UserBaseResultMap" type="com.ssmTest.model.User">
         <id column="id" jdbcType="BIGINT" property="id"/>
-        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="login_name" jdbcType="VARCHAR" property="loginName"/>
         <result column="password" jdbcType="VARCHAR" property="password"/>
-        <result column="sex" jdbcType="VARCHAR" property="sex"/>
-        <result column="email" jdbcType="VARCHAR" property="email"/>
+        <association property="student" column="id" javaType="student" select="com.ssmTest.mapper.StudentMapper.selectByAccountId"/>
     </resultMap>
-    <insert id="insertUser" parameterType="com.ssmTest.model.User">
-        insert into user(name, password, sex, email) values (#{name}, #{password}, #{sex}, #{email});
-    </insert>
-</mapper>
+    
+    <select id="selectById" parameterType="com.ssmTest.model.Account" resultMap="UserBaseResultMap">
+        select * from account
+        where id = #{id}
+    </select>
 ~~~
 
-##演示
-`com.ssmTest.UserInsertTest`
-
-##配置文件
-applicationContext.xml
-spring-dao.xml
-spring-mvc.xml
-spring-service.xml
-mybatis-config.xml
-
-基于`SqlSession`的`ExecutorType`进行批量插入 `spring-dao.xml`配置
-~~~xml
-    <!-- 配置一个可以批量执行的sqlSession -->
-    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
-        <constructor-arg name="sqlSessionFactory" ref="sessionFactory"></constructor-arg>
-        <constructor-arg name="executorType" value="BATCH"></constructor-arg>
-    </bean>
-~~~
